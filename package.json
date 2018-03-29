@@ -1,0 +1,31 @@
+{
+  "name": "rollup-plugin-streaming-wasm",
+  "version": "1.0.0",
+  "description": "Rollup plugin for importing WebAssembly modules (using streaming)",
+  "main": "index.js",
+  "dependencies": {
+    "@babel/generator": "^7.0.0-beta.42",
+    "@babel/template": "^7.0.0-beta.42",
+    "@babel/types": "^7.0.0-beta.42",
+    "rollup-pluginutils": "^2.0.1"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xtuc/rollup-plugin-streaming-wasm.git"
+  },
+  "keywords": [
+    "wasm",
+    "rollup",
+    "streaming"
+  ],
+  "author": "Sven Sauleau",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/xtuc/rollup-plugin-streaming-wasm/issues"
+  },
+  "homepage": "https://github.com/xtuc/rollup-plugin-streaming-wasm#readme"
+}
