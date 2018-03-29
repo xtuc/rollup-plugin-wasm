@@ -4,9 +4,8 @@
   "description": "Rollup plugin for importing WebAssembly modules (using streaming)",
   "main": "index.js",
   "dependencies": {
-    "@babel/generator": "^7.0.0-beta.42",
-    "@babel/template": "^7.0.0-beta.42",
-    "@babel/types": "^7.0.0-beta.42",
+    "@webassemblyjs/ast": "^1.2.2",
+    "@webassemblyjs/wasm-parser": "^1.2.2",
     "rollup-pluginutils": "^2.0.1"
   },
   "devDependencies": {},
