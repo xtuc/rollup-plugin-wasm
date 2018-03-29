@@ -39,7 +39,7 @@ function generateImportObject(o) {
 const buildLoader = ({URL, IMPORT_OBJECT, IMPORTS}) => (`
   ${IMPORTS}
 
-  export default function instantiate() {
+  export function then(resolve) {
     if (typeof WebAssembly === 'undefined') {
       throw new Error('WebAssembly is not supported');
     }
@@ -54,9 +54,11 @@ const buildLoader = ({URL, IMPORT_OBJECT, IMPORTS}) => (`
 
     const req = window.fetch("${URL}");
 
-    return WebAssembly
+    WebAssembly
       .instantiateStreaming(req, ${IMPORT_OBJECT})
-      .then(res => res.instance.exports);
+      .then(res => res.instance.exports)
+      .then(resolve)
+      .catch(resolve);
   }
 `);
 
@@ -114,5 +116,9 @@ export default function (options = {}) {
 
     transform,
     ongenerate,
+
+    options(opts) {
+      opts.experimentalDynamicImport = true;
+    }
   };
 }

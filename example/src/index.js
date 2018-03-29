@@ -1,5 +1,3 @@
-import instantiate from "./test.wasm"
-
 import {mem} from "./env.js"
 
 // (module
@@ -16,7 +14,7 @@ import {mem} from "./env.js"
 //   (func (export "logfoofromwasm") call 0)
 // )
 
-instantiate().then(({test, getNumber, logfoofromwasm}) => {
+import("./test.wasm").then(({test, getNumber, logfoofromwasm}) => {
   const i32 = new Uint32Array(mem.buffer);
   console.log("test()", test(), "expected", i32[0]);
 
