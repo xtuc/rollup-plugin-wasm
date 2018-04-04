@@ -1,49 +1,26 @@
-import { createFilter } from 'rollup-pluginutils'
-import { createHash } from 'crypto'
-import { writeFileSync } from 'fs'
-import { decode } from "@webassemblyjs/wasm-parser";
-import { traverse } from "@webassemblyjs/ast";
+import { createFilter } from 'rollup-pluginutils';
+import { writeFileSync } from 'fs';
+import { dirname, join } from 'path';
+import { decode } from '@webassemblyjs/wasm-parser';
+import { traverse } from '@webassemblyjs/ast';
+import mkdirp from 'mkdirp';
+import { getHash, printImportObject } from "./utils";
 
-function getHash(str) {
-  const hash = createHash('md4');
-  hash.update(str);
-
-  return hash.digest('hex').substr(0, 4);
+const decoderOpts = {
+  ignoreCodeSection: true,
+  ignoreDataSection: true,
 };
 
-function generateImportObject(o) {
-  let out = "{";
-
-  Object.keys(o).forEach(ok1 => {
-    out += JSON.stringify(ok1) + ":";
-    out += "{";
-
-    out += "\n";
-
-    Object.keys(o[ok1]).forEach(ok2 => {
-      out += JSON.stringify(ok2) + ":";
-      out += o[ok1][ok2] + ",";
-
-      out += "\n";
-    });
-
-    out += "}";
-    out += ",\n";
-  });
-
-  out += "}";
-
-  return out;
-}
+const banner = (`
+  if (typeof WebAssembly === 'undefined') {
+    throw new Error('WebAssembly is not supported');
+  }
+`);
 
 const buildLoader = ({URL, IMPORT_OBJECT, IMPORTS}) => (`
   ${IMPORTS}
 
   export function then(resolve) {
-    if (typeof WebAssembly === 'undefined') {
-      throw new Error('WebAssembly is not supported');
-    }
-
     if (typeof WebAssembly.instantiateStreaming !== 'function') {
       throw new Error('WebAssembly.instantiateStreaming is not supported');
     }
@@ -52,7 +29,7 @@ const buildLoader = ({URL, IMPORT_OBJECT, IMPORTS}) => (`
       throw new Error('window.fetch is not supported');
     }
 
-    const req = window.fetch("${URL}");
+    const req = window.fetch('${URL}');
 
     WebAssembly
       .instantiateStreaming(req, ${IMPORT_OBJECT})
@@ -62,23 +39,18 @@ const buildLoader = ({URL, IMPORT_OBJECT, IMPORTS}) => (`
   }
 `);
 
-const decoderOpts = {
-  ignoreCodeSection: true,
-  ignoreDataSection: true,
-};
-
 export default function (options = {}) {
   let state = {};
-  let importObject = {};
+  const importObject = {};
+
+  const filter = createFilter(['**/*.wasm'], options.exclude);
 
   function transform(bin, id) {
-    const filter = createFilter(['**/*.wasm'], options.exclude);
-
     if (!filter(id)) {
       return
     }
 
-    const filename = "module" + getHash(id) + ".wasm";
+    const filename = 'module' + getHash(id) + '.wasm';
     const imports = [];
 
     const wasmAst = decode(new Buffer(bin), decoderOpts);
@@ -88,9 +60,9 @@ export default function (options = {}) {
         const id = node.name;
         const from = node.module
 
-        imports.push(`import {${id}} from "${from}"`);
+        imports.push(`import {${id}} from '${from}'`);
 
-        if (typeof importObject[from] === "undefined") {
+        if (typeof importObject[from] === 'undefined') {
           importObject[from] = {};
         }
 
@@ -101,21 +73,28 @@ export default function (options = {}) {
     state = {bin, filename};
 
     return buildLoader({
-      URL: '/' + filename,
-      IMPORT_OBJECT: generateImportObject(importObject),
-      IMPORTS: imports.join("\n")
+      URL: '/' + options.outdir + filename,
+      IMPORT_OBJECT: printImportObject(importObject),
+      IMPORTS: imports.join('\n')
     });
   }
 
-  function ongenerate(opts) {
-    writeFileSync(state.filename, new Buffer(state.bin));
+  function onwrite(opts) {
+    const outdir = dirname(opts.file);
+    const out = join(outdir, state.filename)
+
+    mkdirp.sync(outdir);
+    writeFileSync(out, new Buffer(state.bin));
+
+    state = {};
   }
 
   return {
-    name: 'streaming-wasm',
+    name: 'experimental/wasm',
 
+    banner,
     transform,
-    ongenerate,
+    onwrite,
 
     options(opts) {
       opts.experimentalDynamicImport = true;

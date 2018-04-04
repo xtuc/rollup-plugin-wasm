@@ -1,3 +1,8 @@
+
+  if (typeof WebAssembly === 'undefined') {
+    throw new Error('WebAssembly is not supported');
+  }
+
 'use strict';
 
 const number = 10;
@@ -34,10 +39,6 @@ Promise.resolve().then(function () { return test; }).then(({test, getNumber, log
 });
 
 function then(resolve) {
-    if (typeof WebAssembly === 'undefined') {
-      throw new Error('WebAssembly is not supported');
-    }
-
     if (typeof WebAssembly.instantiateStreaming !== 'function') {
       throw new Error('WebAssembly.instantiateStreaming is not supported');
     }
@@ -46,15 +47,10 @@ function then(resolve) {
       throw new Error('window.fetch is not supported');
     }
 
-    const req = window.fetch("/modulee01d.wasm");
+    const req = window.fetch('/./dist/module7149.wasm');
 
     WebAssembly
-      .instantiateStreaming(req, {"./env.js":{
-"mem":mem,
-"number":number,
-"logfoo":logfoo,
-},
-})
+      .instantiateStreaming(req, {"./env.js":{"mem":mem,"number":number,"logfoo":logfoo,},})
       .then(res => res.instance.exports)
       .then(resolve)
       .catch(resolve);

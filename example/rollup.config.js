@@ -1,10 +1,12 @@
 import plugin from "../src/index"
 
+const outdir = './dist/';
+
 export default {
   input: 'src/index.js',
   output: {
-    file: 'bundle.js',
+    file: outdir + 'bundle.js',
     format: 'cjs'
   },
-  plugins: [ plugin() ]
+  plugins: [ plugin({outdir}) ]
 };
