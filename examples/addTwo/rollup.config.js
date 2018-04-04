@@ -1,4 +1,4 @@
-import plugin from "../src/index"
+import wasm from "../../src/index"
 
 const outdir = './dist/';
 
@@ -8,5 +8,7 @@ export default {
     file: outdir + 'bundle.js',
     format: 'cjs'
   },
-  plugins: [ plugin({outdir}) ]
+  plugins: [
+    wasm({outdir})
+  ]
 };
